@@ -10,6 +10,7 @@ from app.llm_adapter import get_llm_adapter
 from app.metrics.prometheus_metrics import get_metrics
 from app.model.models import HealthResponse, RewriteRequest, RewriteResponse
 from app.service.rewrite_service import RewriteService
+from app.exception.custom_exceptions import LLMRateLimitError
 
 logger = setup_logger(__name__)
 
@@ -44,6 +45,15 @@ async def rewrite_text(request: RewriteRequest):
         logger.info("Processing new rewrite request")
         result = await rewrite_service.rewrite(request.text, request.style)
         return result
+    except LLMRateLimitError as e:
+        logger.error(f"LLM Adapter Rate limit exceeded: {str(e)}")
+        raise HTTPException(
+            status_code=429, 
+            detail={
+                "message": "The service is currently experiencing high demand. Please try again in a few moments.",
+                "retry_after_seconds": 60,  
+            }
+        )
     except Exception as e:
         logger.error(f"Error processing rewrite request: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")

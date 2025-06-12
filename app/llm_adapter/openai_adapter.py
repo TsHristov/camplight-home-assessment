@@ -44,7 +44,7 @@ class OpenAIAdapter(LLMAdapter):
 
         while retry_count < self.config.max_retries:
             try:
-                
+
                 prompt = self.style_prompts.get(style)
 
                 response = await self.client.chat.completions.create(
