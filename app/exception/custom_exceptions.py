@@ -27,3 +27,19 @@ class InvalidStyleError(ValidationError):
 
     def __init__(self, valid_styles: list[str]):
         super().__init__(message=f"Style must be one of: {', '.join(valid_styles)}")
+
+
+class LLMError(HTTPException):
+    """Base exception for LLM-related errors."""
+    def __init__(self, detail: str):
+        super().__init__(status_code=500, detail=detail)
+
+class LLMRateLimitError(LLMError):
+    """Exception raised when LLM API rate limit is exceeded."""
+    def __init__(self, detail: str = "Rate limit exceeded"):
+        super().__init__(detail=detail)
+
+class LLMTimeoutError(LLMError):
+    """Exception raised when LLM API request times out."""
+    def __init__(self, detail: str = "Request timed out"):
+        super().__init__(detail=detail)
